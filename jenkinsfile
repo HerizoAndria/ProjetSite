@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        // URL du dépôt GitHub
+        GITHUB_REPO = 'git@github.com:<HerizoAndria>/ProjetSite>.git'
+        // Branche utilisée pour GitHub Pages
+        GH_BRANCH = 'gh-pages'
+    }
+
+    stages {
+        stage('Cloner le dépôt') {
+            steps {
+                git branch: 'master', url: "${GITHUB_REPO}"
+            }
+        }
+
+        stage('Préparer les fichiers pour le déploiement') {
+            steps {
+                script {
+                    // Suppression les anciens fichiers pour éviter les conflits
+                    sh 'rm -rf ../deploy/* || true'
+                    sh 'mkdir -p ../deploy'
+                    //copier les fichiers 
+                    sh 'cp -r * ../deploy'
+                }
+            }
+        }
+
+        stage('Déployer sur GitHub Pages') {
+            steps {
+                script {
+                    dir('../deploy') {
+                        sh """
+                        git init
+                        git config user.name "Herizo"
+                        git config user.email "nyhasinavalonaherizo@gmail.com"
+                        
+                        git remote add origin ${GITHUB_REPO}
+                        git checkout -b ${GH_BRANCH}
+
+                        # Ajouter et committer les fichiers
+                        git add .
+                        git commit -m "Déploiement via Jenkins"
+                        
+                        # Pousser les modifications sur GitHub Pages
+                        git push --force origin ${GH_BRANCH}
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Site déployé avec succès sur GitHub Pages !"
+        }
+        failure {
+            echo "Échec du déploiement."
+        }
+    }
+}
