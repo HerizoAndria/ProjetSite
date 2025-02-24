@@ -21,7 +21,7 @@ pipeline {
                     // Suppression les anciens fichiers pour éviter les conflits
                     sh 'rm -rf ../deploy/* || true'
                     sh 'mkdir -p ../deploy'
-                    //copier les fichiers 
+                    //copier les fichiers
                     sh 'cp -r * ../deploy'
                 }
             }
